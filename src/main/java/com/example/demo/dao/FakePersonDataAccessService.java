@@ -19,9 +19,7 @@ public class FakePersonDataAccessService implements  PersonDao{
 
     @Override
     public List<Person> selectAllPeople() {
-        return DB.stream()
-                .filter(person -> person.getId().equals(id))
-                .findFirst();
+        return DB;
     }
 
     @Override
@@ -33,13 +31,27 @@ public class FakePersonDataAccessService implements  PersonDao{
 
     @Override
     public int deletePersonById(UUID id) {
-        return DB
-                ;
+        Optional<Person> personMaybe = selectPersonById(id);
+        if (personMaybe.isEmpty()) {
+            return 0;
+        }
+        DB.remove(personMaybe.get());
+        return 1;
     }
 
     @Override
     public int updatePersonById(UUID id, Person person) {
-        return 0;
+        return selectPersonById(id)
+                .map(p -> {
+//                    get the index of the user
+                    int indexOfPersonToUpdate = DB.indexOf(person);
+//                    if the index of the user is -ve that means the user is not in the list
+                    if (indexOfPersonToUpdate >= 0) {
+                        DB.set(indexOfPersonToUpdate, person);
+                        return 1;
+                    }
+                    return 0;
+                }).orElse(0);
     }
 
 
